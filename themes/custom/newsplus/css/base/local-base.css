@@ -219,3 +219,12 @@ div.actividad-item, div.servicio-item {
   background-color:  #993366;
 
  }
+
+ .more-link a {
+  background-color: #dadada;
+  display: inline-block;
+  font-size: 13px;
+  margin: 15px 0 10px;
+  min-width: 105px;
+  padding: 8px;
+}
