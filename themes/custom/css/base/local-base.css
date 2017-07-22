@@ -1,0 +1,206 @@
+/**
+ * @file
+ * Use this CSS file to override base CSS rules
+ */
+ 
+ 
+ 
+ 
+
+.head-top {
+   font-size:11px;
+   padding: 8px 0 18px;
+ }
+
+ .head-top > a{
+  color: #00c0f3;
+  text-decoration: none;
+ }
+.head-top.derecha{
+     text-align: right;
+}
+
+.head-top .izq{
+     text-align: left;
+}
+
+.resumen-dest{
+   font-size:14px;
+  }
+
+ 
+
+
+
+.documentos{
+margin-top:8px;
+ padding-bottom:8px;
+border-bottom: dotted 1px #7d7d7d;
+ 
+}
+
+
+
+.image-caption{
+ border-bottom: 0.063rem dotted #d0d0d0;
+    color: #646464;
+    font-size: 0.764em;
+    line-height: 108%;
+    padding: 0.313rem;
+    text-align: right;
+}
+
+.with-image .image-caption{
+  display: none;
+}
+ 
+  .servicio {
+    padding: 6px;
+	background-color:  #ffda5a;
+}
+
+ .actividad {
+    padding: 6px;
+	background-color:  #993366;
+}
+
+.views-field-title.fijo{ 
+		height: 45px; 
+		overflow: hidden;
+}
+
+
+
+.views-field-title.fijo.clara > a {
+    color: #fff;
+}
+
+.titulo-bloque {
+    border-bottom: 1px solid;
+   color: #004e94;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    margin-top: 7px;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+    border-bottom-color:  #66bff1;
+}
+
+
+
+.sidebar .block > h2, #page .block-views > h2 {
+    color: #004e94;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    margin-top: 7px;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+}
+
+ .sidebar .block > h2, #page .block-views > h2 {
+    border-bottom-color: #66bff1;
+}
+
+
+.views-field-title a {
+    color: #3f3f3f;
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.42;
+}
+
+.field-content.pie-infoaebu {
+    margin-bottom: 40px;
+}
+
+.copete-info > p > strong > span{
+    font-size: 15px;
+}
+
+.view-duplicado-de-infoaebu-hijos > h3 {
+
+}
+
+
+
+.view-content > h3 > a {
+
+    color: #f89100;
+ 
+}
+.view-content > h3  {
+    border-top: 1px solid;
+    color: #f89100;
+    padding-top: 5px;
+}
+
+.views-field-field-infoaebu-fecha {
+  background-color: #b6b6b6;
+  border-radius: 5px;
+  color: #fff;
+  padding: 5px;
+   font-size: 15px
+}
+}
+
+.fecha-info {
+  background-color: #b6b6b6;
+  border-radius: 5px;
+  color: #fff;
+  padding: 5px;
+  width: 200px;
+  font-size: 15px;
+  text-align: center;
+ 
+}
+
+/*.fecha-info{
+   font-size: 15px;
+  color: #7d7d7d;
+  line-height: 0.7; 
+
+}*/
+
+.fecha-info , .field--name-field-llam-fecha {
+  display: block;
+  background-color: #b6b6b6;
+  border-radius: 5px;
+  color: #fff;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  width: 240px;
+  font-size: 15px;
+  text-align: center;
+  margin-bottom: 5px;
+ }
+
+
+
+
+
+div.view-content div.views-row div div.copete-info p strong span {
+
+    font-size: 15px;
+}
+
+div.actividad-item div.views-field-created time.datetime {
+    color: #fff;
+}
+
+div.actividad-item, div.servicio-item {
+    margin-top: 10px;
+}
+
+.descarga, .field__item > i  {
+  color: #004e94;
+ 
+}
+
+.descarga > span > i > a, .descarga > div > i > a, .field__item > i > a  {
+     font-family: 'PT Sans', Helvetica Neue, Arial, Sans-serif;
+
+} 
+

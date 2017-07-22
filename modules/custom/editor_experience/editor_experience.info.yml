@@ -1,0 +1,13 @@
+name: 'Editor Experience'
+type: module
+description: 'prueba de plugins para ckeditor.'
+# core: 8.x
+package: CKEditor
+
+
+dependencies:
+  - ckeditor
+
+version: '8.x'
+core: '8.x'
+
