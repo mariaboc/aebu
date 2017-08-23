@@ -1,0 +1,132 @@
+/**
+ * @file
+ * Visual styles for Newsplus's views.
+ */
+.views-field-title a {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.42;
+  color: #3f3f3f;
+  display: block;
+}
+.views-field-field-mt-post-categories a {
+  font-size: 13px;
+  text-transform: uppercase;
+  background-color: #7d7d7d;
+  padding: 2px 10px;
+  display: inline-block;
+  color: #fff;
+}
+.views-field-field-mt-post-categories a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+.views-field-created {
+  font-size: 11px;
+  color: #7d7d7d;
+  margin-bottom: 10px;
+}
+
+
+@media (max-width: 480px) {
+.views-view-grid .views-col,
+   .views-col.col-1,
+  .views-col.col-3,
+  .views-col.col-3 {
+    clear: both;
+
+width: 100%;
+  }
+
+
+
+}
+
+/*Views row clear*/
+@media (max-width: 767px) {
+  .views-row.col-xs-6:nth-child(2n+1),
+  .views-row.col-xs-4:nth-child(3n+1),
+  .views-row.col-xs-3:nth-child(4n+1)
+  .views-view-grid .views-col,
+   .views-col.col-1,
+  .views-col.col-2,
+  .views-col.col-3 {
+    clear: both;
+
+  }
+    .views-col.col-1,
+  .views-col.col-2,
+  .views-col.col-3
+   {
+    width:100%;
+  }
+  
+    .servicio {
+      background-color: #ffda5a;
+  }
+
+
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .views-row.col-sm-6:nth-child(2n+1),
+  .views-row.col-sm-4:nth-child(3n+1),
+  .views-row.col-sm-3:nth-child(4n+1),
+  .views-view-grid .views-col,
+  .views-col.col-1,
+  .views-col.col-2,
+  .views-col.col-3
+   {
+    clear: both;
+  }
+
+  .views-col.col-1,
+  .views-col.col-2,
+  .views-col.col-3
+   {
+    width:100%;
+  }
+  
+
+
+ }
+@media (min-width: 992px) {
+  .views-row.col-md-6:nth-child(2n+1),
+  .views-row.col-md-4:nth-child(3n+1),
+  .views-row.col-md-3:nth-child(4n+1){
+    clear: both;
+  }
+  }
+
+
+/*clear grid floats*/
+.view.row .view-content:before,
+.view.row .view-content:after {
+  display: table;
+  content: " ";
+}
+.view.row .view-content:after {
+  clear: both;
+}
+
+.views-row.clearfix.row-1 {
+  
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+
+
+.views-view-grid.horizontal.cols-3.clearfix {
+    background-color: #ffda5a;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.views-view-grid .views-col {
+    float: left;
+    margin-bottom: 8px;
+   /* padding: 8px;*/
+}
+
+
