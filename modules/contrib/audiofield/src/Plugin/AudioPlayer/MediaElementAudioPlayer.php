@@ -2,9 +2,9 @@
 
 namespace Drupal\audiofield\Plugin\AudioPlayer;
 
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\audiofield\AudioFieldPluginBase;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Implements the MediaElement Audio Player plugin.
@@ -17,7 +17,7 @@ use Drupal\audiofield\AudioFieldPluginBase;
  *     "mp3", "oga", "ogg", "wav",
  *   },
  *   libraryName = "mediaelement",
- *   librarySource = "http://mediaelementjs.com/",
+ *   website = "http://mediaelementjs.com/",
  * )
  */
 class MediaElementAudioPlayer extends AudioFieldPluginBase {
@@ -25,7 +25,7 @@ class MediaElementAudioPlayer extends AudioFieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function renderPlayer(FieldItemListInterface $items, $langcode, $settings) {
+  public function renderPlayer(FieldItemListInterface $items, $langcode, array $settings) {
     // Check to make sure we're installed.
     if (!$this->checkInstalled()) {
       // Show the error.
@@ -37,44 +37,31 @@ class MediaElementAudioPlayer extends AudioFieldPluginBase {
     }
 
     // Start building settings to pass to the javascript MediaElement builder.
-    $player_settings = array(
+    $player_settings = [
       // MediaElement expects this as a 0 - 1 range.
       'volume' => ($settings['audio_player_initial_volume'] / 10),
       'elements' => [],
-    );
+    ];
 
-    $markup = '';
-    foreach ($items as $item) {
-      // If this entity has passed validation, we render it.
-      if ($this->validateEntityAgainstPlayer($item)) {
-        // Get render information for this item.
-        $renderInfo = $this->getAudioRenderInfo($item);
-
-        // Pass the element name for the player so we know what to render.
-        $player_settings['elements'][] = '#mediaelement_player_' . $renderInfo->id;
-
-        // Generate HTML markup for the player.
-        $markup .= '<div class="mediaelementaudio_frame">
-            <audio id="mediaelement_player_' . $renderInfo->id . '" controls>
-              <source src="' . $renderInfo->url->toString() . '">
-              Your browser does not support the audio element.
-            </audio>
-          </div>
-          <label for="mediaelement_player_' . $renderInfo->id . '">' . $renderInfo->description . '</label>';
-      }
+    // Format files for output.
+    $template_files = $this->getItemRenderList($items);
+    foreach ($template_files as $renderInfo) {
+      // Pass the element name for the player so we know what to render.
+      $player_settings['elements'][] = '#mediaelement_player_' . $renderInfo->id;
     }
 
     return [
       'audioplayer' => [
-        '#prefix' => '<div class="audiofield">',
-        '#markup' => Markup::create($markup),
-        '#suffix' => '</div>',
+        '#theme' => 'audioplayer',
+        '#plugin_id' => 'mediaelement',
+        '#settings' => $settings,
+        '#files' => $template_files,
       ],
       'downloads' => $this->createDownloadList($items, $settings),
       '#attached' => [
         'library' => [
           // Attach the MediaElement library.
-          'audiofield/audiofield.' . $this->getPluginLibrary(),
+          'audiofield/audiofield.' . $this->getPluginLibraryName(),
         ],
         'drupalSettings' => [
           'audiofieldmediaelement' => [
@@ -83,6 +70,15 @@ class MediaElementAudioPlayer extends AudioFieldPluginBase {
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluginLibraryVersion() {
+    // Parse the JSON file for version info.
+    $library_data = Json::decode(file_get_contents(drupal_realpath(DRUPAL_ROOT . $this->getPluginLibraryPath() . '/package.json')));
+    return $library_data['version'];
   }
 
 }

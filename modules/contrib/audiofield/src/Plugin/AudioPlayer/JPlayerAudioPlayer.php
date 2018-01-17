@@ -2,9 +2,9 @@
 
 namespace Drupal\audiofield\Plugin\AudioPlayer;
 
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\audiofield\AudioFieldPluginBase;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Implements the jPlayer Audio Player plugin.
@@ -17,7 +17,7 @@ use Drupal\audiofield\AudioFieldPluginBase;
  *     "mp3", "mp4", "wav", "ogg", "oga", "webm",
  *   },
  *   libraryName = "jplayer",
- *   librarySource = "http://jplayer.org/",
+ *   website = "http://jplayer.org/",
  * )
  */
 class JPlayerAudioPlayer extends AudioFieldPluginBase {
@@ -25,7 +25,7 @@ class JPlayerAudioPlayer extends AudioFieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function renderPlayer(FieldItemListInterface $items, $langcode, $settings) {
+  public function renderPlayer(FieldItemListInterface $items, $langcode, array $settings) {
     // Check to make sure we're installed.
     if (!$this->checkInstalled()) {
       // Show the error.
@@ -36,81 +36,59 @@ class JPlayerAudioPlayer extends AudioFieldPluginBase {
       return $default_player->renderPlayer($items, $langcode, $settings);
     }
 
+    // Create arrays to pass to the twig template.
+    $template_settings = $settings;
+    $template_theme = str_replace('audiofield.jplayer.theme_', '', $settings['audio_player_jplayer_theme']);
+
     // JPlayer circle has to render differently - no playlist support, etc.
     if ($settings['audio_player_jplayer_theme'] == 'audiofield.jplayer.theme_jplayer_circle') {
       // @todo circle player broken for some reason.
       // Only require the default library.
-      $library = 'audiofield/audiofield.' . $this->getPluginLibrary();
+      $library = 'audiofield/audiofield.' . $this->getPluginLibraryName();
 
       // Start building settings to pass to the javascript jplayer builder.
-      $player_settings = array(
+      $player_settings = [
         'playertype' => 'circle',
         // JPlayer expects this as a 0 - 1 value.
         'volume' => ($settings['audio_player_initial_volume'] / 10),
         'files' => [],
-      );
-      $markup = '';
-      foreach ($items as $item) {
-        // If this entity has passed validation, we render it.
-        if ($this->validateEntityAgainstPlayer($item)) {
-          // Get render information for this item.
-          $renderInfo = $this->getAudioRenderInfo($item);
+      ];
 
-          // Add entry to player settings for this file.
-          $player_settings['files'][] = [
-            'file' => $renderInfo->url->toString(),
-            'description' => $renderInfo->description,
-            'filetype' => $renderInfo->filetype,
-            'fid' => $renderInfo->id,
-          ];
-
-          $markup .= '
-            <div id="jquery_jplayer_' . $renderInfo->id . '" class="cp-jplayer"></div>
-            <div class="cp-circle-frame">
-              <div id="cp_container_' . $renderInfo->id . '" class="cp-container">
-                <div class="cp-buffer-holder">
-                  <div class="cp-buffer-1"></div>
-                  <div class="cp-buffer-2"></div>
-                </div>
-                <div class="cp-progress-holder">
-                  <div class="cp-progress-1"></div>
-                  <div class="cp-progress-2"></div>
-                </div>
-                <div class="cp-circle-control"></div>
-                <ul class="cp-controls">
-                  <li><a class="cp-play" tabindex="1">play</a></li>
-                  <li><a class="cp-pause" style="display:none;" tabindex="1">pause</a></li>
-                </ul>
-              </div>
-              <label for="cp_container_' . $renderInfo->id . '">' . $renderInfo->description . '</label>
-            </div>
-          ';
-        }
+      // Format files for output.
+      $template_files = $this->getItemRenderList($items);
+      foreach ($template_files as $renderInfo) {
+        // Add entry to player settings for this file.
+        $player_settings['files'][] = [
+          'file' => $renderInfo->url->toString(),
+          'description' => $renderInfo->description,
+          'filetype' => $renderInfo->filetype,
+          'fid' => $renderInfo->id,
+          'autoplay' => $settings['audio_player_autoplay'],
+          'lazyload' => $settings['audio_player_lazyload'],
+        ];
       }
     }
     // This is a normal jPlayer skin, so we render normally.
     else {
       // Need to derermine quantity of valid items.
-      $valid_item_count = 0;
+      $template_settings['item_count'] = 0;
       foreach ($items as $item) {
         if ($this->validateEntityAgainstPlayer($item)) {
-          $valid_item_count++;
+          $template_settings['item_count']++;
         }
       }
 
       // If there is only a single file, we render as a standard player.
-      if ($valid_item_count == 1) {
+      if ($template_settings['item_count'] == 1) {
         // Only require the default library.
-        $library = 'audiofield/audiofield.' . $this->getPluginLibrary();
+        $library = 'audiofield/audiofield.' . $this->getPluginLibraryName();
 
-        // Load the first item.
-        $item = $items->first();
+        // Set the template theme name.
+        $template_theme = 'default_single';
 
-        // If this entity has passed validation, we render it.
-        if ($this->validateEntityAgainstPlayer($item)) {
-          // Get render information for this item.
-          $renderInfo = $this->getAudioRenderInfo($item);
-
+        // Format files for output.
+        $template_files = $this->getItemRenderList($items, 1);
+        foreach ($template_files as $renderInfo) {
           // Start building settings to pass to the javascript jplayer builder.
           $player_settings = [
             'playertype' => 'default',
@@ -120,54 +98,21 @@ class JPlayerAudioPlayer extends AudioFieldPluginBase {
             'filetype' => $renderInfo->filetype,
             // JPlayer expects this as a 0 - 1 value.
             'volume' => ($settings['audio_player_initial_volume'] / 10),
+            'autoplay' => $settings['audio_player_autoplay'],
+            'lazyload' => $settings['audio_player_lazyload'],
           ];
 
-          // Generate the html for the player.
-          $markup = '
-            <div id="jquery_jplayer_' . $player_settings['unique_id'] . '" class="jp-jplayer"></div>
-            <div id="jp_container_' . $player_settings['unique_id'] . '" class="jp-audio" role="application" aria-label="media player">
-              <div class="jp-type-single">
-                <div class="jp-gui jp-interface">
-                  <div class="jp-controls">
-                    <button class="jp-play" role="button" tabindex="0">play</button>
-                    <button class="jp-stop" role="button" tabindex="0">stop</button>
-                  </div>
-                  <div class="jp-progress">
-                    <div class="jp-seek-bar">
-                      <div class="jp-play-bar"></div>
-                    </div>
-                  </div>
-                  <div class="jp-volume-controls">
-                    <button class="jp-mute" role="button" tabindex="0">mute</button>
-                    <button class="jp-volume-max" role="button" tabindex="0">max volume</button>
-                    <div class="jp-volume-bar">
-                      <div class="jp-volume-bar-value"></div>
-                    </div>
-                  </div>
-                  <div class="jp-time-holder">
-                    <div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
-                    <div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
-                    <div class="jp-toggles">
-                      <button class="jp-repeat" role="button" tabindex="0">repeat</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="jp-details">
-                  <div class="jp-title" aria-label="title">&nbsp;</div>
-                </div>
-                <div class="jp-no-solution">
-                  <span>Update Required</span>
-                  To play the media you will need to either update your browser to a recent version or update your <a href="http:// get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
-                </div>
-              </div>
-            </div>
-          ';
+          // Store the unique id for the template.
+          $template_settings['id'] = $renderInfo->id;
         }
       }
       // If we have multiple files, we need to render this as a playlist.
       else {
         // Requires the playlist library.
-        $library = 'audiofield/audiofield.' . $this->getPluginLibrary() . '.playlist';
+        $library = 'audiofield/audiofield.' . $this->getPluginLibraryName() . '.playlist';
+
+        // Set the template theme name.
+        $template_theme = 'default_multiple';
 
         // Start building settings to pass to the javascript jplayer builder.
         $player_settings = [
@@ -176,89 +121,37 @@ class JPlayerAudioPlayer extends AudioFieldPluginBase {
           'volume' => ($settings['audio_player_initial_volume'] / 10),
           'files' => [],
           'filetypes' => [],
+          'autoplay' => $settings['audio_player_autoplay'],
+          'lazyload' => $settings['audio_player_lazyload'],
         ];
-        foreach ($items as $item) {
-          // If this entity has passed validation, we render it.
-          if ($this->validateEntityAgainstPlayer($item)) {
-            // Get render information for this item.
-            $renderInfo = $this->getAudioRenderInfo($item);
 
-            // Add entry to player settings for this file.
-            $player_settings['files'][] = [
-              'file' => $renderInfo->url->toString(),
-              'description' => $renderInfo->description,
-              'filetype' => $renderInfo->filetype,
-            ];
-            $player_settings['filetypes'][] = $renderInfo->filetype;
+        // Format files for output.
+        $template_files = $this->getItemRenderList($items);
+        foreach ($template_files as $renderInfo) {
+          // Add entry to player settings for this file.
+          $player_settings['files'][] = [
+            'file' => $renderInfo->url->toString(),
+            'description' => $renderInfo->description,
+            'filetype' => $renderInfo->filetype,
+          ];
+          $player_settings['filetypes'][] = $renderInfo->filetype;
 
-            // Used to generate unique container.
-            $player_settings['unique_id'] = $renderInfo->id;
-          }
+          // Used to generate unique container.
+          $player_settings['unique_id'] = $template_settings['id'] = $renderInfo->id;
         }
 
         // Use only unique values in the filetypes.
         $player_settings['filetypes'] = array_unique($player_settings['filetypes']);
-
-        // Generate markup.
-        $markup = '
-          <div id="jp_container_' . $player_settings['unique_id'] . '" class="jp-video jp-video-270p" role="application" aria-label="media player">
-            <div class="jp-type-playlist">
-              <div id="jquery_jplayer_' . $player_settings['unique_id'] . '" class="jp-jplayer"></div>
-              <div class="jp-gui">
-                <div class="jp-interface">
-                  <div class="jp-progress">
-                    <div class="jp-seek-bar">
-                      <div class="jp-play-bar"></div>
-                    </div>
-                  </div>
-                  <div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
-                  <div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
-                  <div class="jp-controls-holder">
-                    <div class="jp-controls">
-                      <button class="jp-previous" role="button" tabindex="0">previous</button>
-                      <button class="jp-play" role="button" tabindex="0">play</button>
-                      <button class="jp-next" role="button" tabindex="0">next</button>
-                      <button class="jp-stop" role="button" tabindex="0">stop</button>
-                    </div>
-                    <div class="jp-volume-controls">
-                      <button class="jp-mute" role="button" tabindex="0">mute</button>
-                      <button class="jp-volume-max" role="button" tabindex="0">max volume</button>
-                      <div class="jp-volume-bar">
-                        <div class="jp-volume-bar-value"></div>
-                      </div>
-                    </div>
-                    <div class="jp-toggles">
-                      <button class="jp-repeat" role="button" tabindex="0">repeat</button>
-                      <button class="jp-shuffle" role="button" tabindex="0">shuffle</button>
-                      <button class="jp-full-screen" role="button" tabindex="0">full screen</button>
-                    </div>
-                  </div>
-                  <div class="jp-details">
-                    <div class="jp-title" aria-label="title">&nbsp;</div>
-                  </div>
-                </div>
-              </div>
-              <div class="jp-playlist">
-                <ul>
-                  <!-- The method Playlist.displayPlaylist() uses this unordered list -->
-                  <li>&nbsp;</li>
-                </ul>
-              </div>
-              <div class="jp-no-solution">
-                <span>Update Required</span>
-                To play the media you will need to either update your browser to a recent version or update your <a href="http:// get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
-              </div>
-            </div>
-          </div>
-        ';
       }
     }
 
     return [
       'audioplayer' => [
-        '#prefix' => '<div class="audiofield">',
-        '#markup' => Markup::create($markup),
-        '#suffix' => '</div>',
+        '#theme' => 'audioplayer',
+        '#plugin_id' => 'jplayer',
+        '#plugin_theme' => $template_theme,
+        '#settings' => $template_settings,
+        '#files' => $template_files,
       ],
       'downloads' => $this->createDownloadList($items, $settings),
       '#attached' => [
@@ -275,6 +168,15 @@ class JPlayerAudioPlayer extends AudioFieldPluginBase {
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluginLibraryVersion() {
+    // Parse the JSON file for version info.
+    $library_data = Json::decode(file_get_contents(drupal_realpath(DRUPAL_ROOT . $this->getPluginLibraryPath() . '/package.json')));
+    return $library_data['version'];
   }
 
 }

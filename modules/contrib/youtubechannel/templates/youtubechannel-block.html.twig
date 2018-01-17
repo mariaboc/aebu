@@ -4,7 +4,7 @@
 	<div id="youtubechannel-player" style="width:{{youtube_content.width}}px; height:{{youtube_content.height}}px;">
 		<iframe id="youtubechannel-frame" title="Youtube Video Player" width="{{youtube_content.width}}px" height="{{youtube_content.height}}px;" src="" frameborder="0" allowfullscreen></iframe>  
 	</div>
-	<div id="youtubechannel-list" style="width: {{youtube_content.width}}px; ">
+	<div id="youtubechannel-list" style="width: {{youtube_content.width}}px; height: {{youtube_content.height}}px;">
 		<ul>
 			{% for i in youtube_content.content|keys %}
 				<li><a href="#{{i}}"><img src="{{youtube_content.content[i]}}"></a></li>

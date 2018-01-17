@@ -51,10 +51,10 @@ class AudioPlayer extends Plugin {
   public $libraryName = "";
 
   /**
-   * The source of this plugin's audio player library.
+   * The website of this plugin's audio player library.
    *
    * @var string
    */
-  public $librarySource = "";
+  public $website = "";
 
 }

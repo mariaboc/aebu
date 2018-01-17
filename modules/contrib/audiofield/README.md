@@ -21,13 +21,18 @@ This module will play audio using the HTML5 built-in audio player by default.
 Each plugin (other than the default HTML5 audio player) requires installation
 of additional files. You can check the current status of installation at
 /admin/reports/status or read below for further details on how to install
-each player
+each player.
+
+To install all external audio player libraries at once, you can run the drush
+command drush audiofield-download
 
 Audio.js Audio Player
   Audio.js requires installation of the audio.js library located at
   http://kolber.github.io/audiojs/ - these files should be downloaded and the
   subfolder titled "audiojs" should be placed in /libraries/audiojs such that
   the file audio.min.js is found at /libraries/audiojs/.
+
+  Install through drush using command drush audiofield-download audiojs.
 
   Audio.js does not offer any theme options, but can be fully styled by custom
   CSS.
@@ -37,6 +42,8 @@ jPlayer Audio Player
   http://jplayer.org/ - these files should be downloaded and placed
   in /libraries/jplayer. It should be installed such that the file
   jquery.jplayer.min.js can be found at /libraries/jplayer/dist/jplayer/.
+
+  Install through drush using command drush audiofield-download jplayer.
 
   jPlayer comes bundled with multiple skins by default. You can install
   additional skins by placing them in /libraries/jplayer/dist/skin/ and
@@ -53,11 +60,20 @@ MediaElement Audio Player
   in /libraries/mediaelement such that the file mediaelement-and-player.min.js
   is found at /libraries/mediaelement/build/.
 
+  Install through drush using command drush audiofield-download mediaelement.
+
 Projekktor Audio Player
   Projekktor requires installation of the Projekktor library located at
-  http://www.projekktor.com - these files should be downloaded and placed
-  in /libraries/projekktor such that the file projekktor-1.3.09.min.js is found
-  at /libraries/projekktor/.
+  https://github.com/frankyghost/projekktor - these files should be downloaded
+  and placed in /libraries/projekktor. Please note that Projekktor requires
+  additional installation. This installation is automated with the drush
+  command, but if you are installing manually, you will also need to compile
+  Projekktor using the package.json and Gruntfile included in the distribution.
+  Once you have properly compiled Projekktor, you should find the file
+  projekktor-1.3.09.min.js at /libraries/projekktor/. This file will not exist
+  unless the distribution has been properly compiled.
+
+  Install through drush using command drush audiofield-download projekktor.
 
 SoundManager Audio Player
   WordPress Audio Player requires installation of the SoundManager library
@@ -65,6 +81,8 @@ SoundManager Audio Player
   These files should be downloaded and placed in /libraries/soundmanager such
   that the file soundmanager2-nodebug-jsmin.js can be found at
   /libraries/soundmanager/script/.
+
+  Install through drush using command drush audiofield-download soundmanager.
 
   SoundManager is a highly configurable library. However, handling and allowing
   for all of the possible configurations and implementations of SoundManager is
@@ -74,15 +92,24 @@ SoundManager Audio Player
 
 Wavesurfer Audio Player
   Wavesurfer requires installation of the Wavesurfer library located at
-  https://github.com/katspaugh/wavesurfer.js - these files should be downloaded
-  and placed in /libraries/wavesurfer such that the file pwavesurfer.min.js is
-  found at /libraries/wavesurfer/dist/.
+  https://github.com/katspaugh/wavesurfer.js/releases - these files should be
+  downloaded and placed in /libraries/wavesurfer such that the file
+  wavesurfer.min.js is found at /libraries/wavesurfer/dist/.
+
+  Please note that there are two versions of Wavesurfer (> 2.0 and < 2.0).
+  Audioplayer supports both installations (installed to the same directory),
+  but there are small feature differences between the two to be aware of. The
+  drush command will install the latest version.
+
+  Install through drush using command drush audiofield-download wavesurfer.
 
 WordPress Audio Player
   WordPress Audio Player requires installation of the Standalone version of
   the WordPress Audio Player located at http://wpaudioplayer.com/standalone
   These files should be downloaded and placed in /libraries/wordpress-audio such
   that the file audio-player.js can be found at /libraries/wordpress-audio.
+
+  Install through drush using command drush audiofield-download wordpress.
 
   WordPress Audio Player only supports a single skin, but does support a
   single audio player for multiple files. However, the multi-file version of

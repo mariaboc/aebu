@@ -7,6 +7,7 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\vendor\guzzlehttp\guzzle\src\Exception;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 /**
  * Implements hook_page_top().
@@ -78,12 +79,16 @@ function youtubechannelvideo() {
       $videos[$youtube_id] = $value['snippet']['thumbnails']['default']['url'];
       //$videos[$youtube_id]['title'] = $title;
     }
-    
+
     $vars['width'] = ['#plain_text' => $youtubechannel_config->get('youtubechannel_video_width')];
     $vars['height'] = ['#plain_text' => $youtubechannel_config->get('youtubechannel_video_height')];
     $vars['content'] = $videos;
-    $url = Url::fromUri('https://www.youtube.com/channel/'.$youtube_id);
-    $vars['channel_link'] = \Drupal::l(t('Goto Youtube Channel'), $url);
+
+    $url = Url::fromUri('https://www.youtube.com/channel/'.$youtube_channel_id);
+    $channelLink = Link::fromTextAndUrl(t('Goto Youtube Channel'), $url);
+    $channelLink = $channelLink->toRenderable();
+    $channelLink['#attributes'] = array('target' => '_blank');
+    $vars['channelLink'] = $channelLink;
   } else {
     $vars['show_error'] = true;
     

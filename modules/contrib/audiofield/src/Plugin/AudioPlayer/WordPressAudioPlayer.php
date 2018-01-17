@@ -2,7 +2,6 @@
 
 namespace Drupal\audiofield\Plugin\AudioPlayer;
 
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\audiofield\AudioFieldPluginBase;
 
@@ -17,7 +16,7 @@ use Drupal\audiofield\AudioFieldPluginBase;
  *     "mp3",
  *   },
  *   libraryName = "wordpress",
- *   librarySource = "http://wpaudioplayer.com",
+ *   website = "http://wpaudioplayer.com",
  * )
  */
 class WordPressAudioPlayer extends AudioFieldPluginBase {
@@ -25,7 +24,7 @@ class WordPressAudioPlayer extends AudioFieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function renderPlayer(FieldItemListInterface $items, $langcode, $settings) {
+  public function renderPlayer(FieldItemListInterface $items, $langcode, array $settings) {
     // Check to make sure we're installed.
     if (!$this->checkInstalled()) {
       // Show the error.
@@ -37,31 +36,23 @@ class WordPressAudioPlayer extends AudioFieldPluginBase {
     }
 
     // Start building settings to pass to the javascript WordPress builder.
-    $player_settings = array(
+    $player_settings = [
       // WordPress expects this as a 0 - 100 range.
       'volume' => ($settings['audio_player_initial_volume'] * 10),
       'animate' => ($settings['audio_player_wordpress_animation'] ? 'yes' : 'no'),
       'files' => [],
-    );
+      'autoplay' => $settings['audio_player_autoplay'],
+    ];
 
-    // Create an array to hold the markup for each player.
-    $player_html_markup = [];
-    foreach ($items as $item) {
-      // If this entity has passed validation, we render it.
-      if ($this->validateEntityAgainstPlayer($item)) {
-        // Get render information for this item.
-        $renderInfo = $this->getAudioRenderInfo($item);
-
-        // Pass settings for the file.
-        $player_settings['files'][] = [
-          'file' => $renderInfo->url->toString(),
-          'title' => $renderInfo->description,
-          'unique_id' => $renderInfo->id,
-        ];
-
-        // Generate HTML markup.
-        $player_html_markup[] = '<div class="wordpressaudio_frame"><div class="wordpressaudioplayer" id="wordpressaudioplayer_' . $renderInfo->id . '">' . $renderInfo->description . '</div></div>';
-      }
+    // Format files for output.
+    $template_files = $this->getItemRenderList($items, ($settings['audio_player_wordpress_combine_files'] ? 1 : 0));
+    foreach ($template_files as $renderInfo) {
+      // Pass settings for the file.
+      $player_settings['files'][] = [
+        'file' => $renderInfo->url->toString(),
+        'title' => $renderInfo->description,
+        'unique_id' => $renderInfo->id,
+      ];
     }
 
     // If we are combining into a single player, make some modifications.
@@ -83,26 +74,20 @@ class WordPressAudioPlayer extends AudioFieldPluginBase {
           'unique_id' => $player_settings['files'][0]['unique_id'],
         ],
       ];
-
-      // Only need the first player to be rendered for markup.
-      $markup = $player_html_markup[0];
-    }
-    else {
-      // We need all markup so just combine them.
-      $markup = implode('', $player_html_markup);
     }
 
     return [
       'audioplayer' => [
-        '#prefix' => '<div class="audiofield">',
-        '#markup' => Markup::create($markup),
-        '#suffix' => '</div>',
+        '#theme' => 'audioplayer',
+        '#plugin_id' => 'wordpress',
+        '#settings' => $settings,
+        '#files' => $template_files,
       ],
       'downloads' => $this->createDownloadList($items, $settings),
       '#attached' => [
         'library' => [
           // Attach the WordPress library.
-          'audiofield/audiofield.' . $this->getPluginLibrary(),
+          'audiofield/audiofield.' . $this->getPluginLibraryName(),
         ],
         'drupalSettings' => [
           'audiofieldwordpress' => [
@@ -111,6 +96,17 @@ class WordPressAudioPlayer extends AudioFieldPluginBase {
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluginLibraryVersion() {
+    // Parse the audio-player.js file for version info.
+    $library_data = file_get_contents(drupal_realpath(DRUPAL_ROOT . $this->getPluginLibraryPath() . '/audio-player.js'));
+    $matches = [];
+    preg_match('%SWFObject v([0-9\.]+).*%', $library_data, $matches);
+    return $matches[1];
   }
 
 }

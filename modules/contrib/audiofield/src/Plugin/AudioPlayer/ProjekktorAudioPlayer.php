@@ -2,9 +2,9 @@
 
 namespace Drupal\audiofield\Plugin\AudioPlayer;
 
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\audiofield\AudioFieldPluginBase;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Implements the Projekktor Audio Player plugin.
@@ -17,7 +17,7 @@ use Drupal\audiofield\AudioFieldPluginBase;
  *     "mp3", "mp4", "ogg", "oga", "wav",
  *   },
  *   libraryName = "projekktor",
- *   librarySource = "http://www.projekktor.com/",
+ *   website = "http://www.projekktor.com/",
  * )
  */
 class ProjekktorAudioPlayer extends AudioFieldPluginBase {
@@ -25,7 +25,7 @@ class ProjekktorAudioPlayer extends AudioFieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function renderPlayer(FieldItemListInterface $items, $langcode, $settings) {
+  public function renderPlayer(FieldItemListInterface $items, $langcode, array $settings) {
     // Check to make sure we're installed.
     if (!$this->checkInstalled()) {
       // Show the error.
@@ -42,37 +42,28 @@ class ProjekktorAudioPlayer extends AudioFieldPluginBase {
       'volume' => ($settings['audio_player_initial_volume'] / 10),
       'swfpath' => $this->getPluginLibraryPath() . '/swf/Jarisplayer/jarisplayer.swf',
       'files' => [],
+      'autoplay' => $settings['audio_player_autoplay'],
     ];
 
-    $markup = '';
-    foreach ($items as $item) {
-      // If this entity has passed validation, we render it.
-      if ($this->validateEntityAgainstPlayer($item)) {
-        // Get render information for this item.
-        $renderInfo = $this->getAudioRenderInfo($item);
-
-        // Add this file to the render settings.
-        $player_settings['files'][] = $renderInfo->id;
-
-        $markup .= '<audio id="' . $renderInfo->id . '" class="audiofield-projekktor projekktor" controls>
-             <source src="' . $renderInfo->url->toString() . '" type="audio/mpeg">
-             Your browser does not support the audio element.
-          </audio>
-          <label>' . $renderInfo->description . '</label>';
-      }
+    // Format files for output.
+    $template_files = $this->getItemRenderList($items);
+    foreach ($template_files as $renderInfo) {
+      // Add this file to the render settings.
+      $player_settings['files'][] = $renderInfo->id;
     }
 
     return [
       'audioplayer' => [
-        '#prefix' => '<div class="audiofield">',
-        '#markup' => Markup::create($markup),
-        '#suffix' => '</div>',
+        '#theme' => 'audioplayer',
+        '#plugin_id' => 'projekktor',
+        '#settings' => $settings,
+        '#files' => $template_files,
       ],
       'downloads' => $this->createDownloadList($items, $settings),
       '#attached' => [
         'library' => [
           // Attach the projekktor library.
-          'audiofield/audiofield.' . $this->getPluginLibrary(),
+          'audiofield/audiofield.' . $this->getPluginLibraryName(),
         ],
         'drupalSettings' => [
           'audiofieldprojekktor' => [
@@ -81,6 +72,15 @@ class ProjekktorAudioPlayer extends AudioFieldPluginBase {
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluginLibraryVersion() {
+    // Parse the JSON file for version info.
+    $library_data = Json::decode(file_get_contents(drupal_realpath(DRUPAL_ROOT . $this->getPluginLibraryPath() . '/package.json')));
+    return $library_data['version'];
   }
 
 }

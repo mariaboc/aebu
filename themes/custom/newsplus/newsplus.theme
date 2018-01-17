@@ -174,8 +174,8 @@ function newsplus_preprocess_page(&$variables) {
   $offset_fullwidth_content = theme_get_setting('offset_fullwidth_content');
 
     //  kint( $three_columns_grid_layout , ' $three_columns_grid_layout ');
-     //       kint( $offset_fullwidth_content , ' $offset_fullwidth_content ');
-     //  kint( $sidebar_first , ' $sidebar_first ');
+    //       kint( $offset_fullwidth_content , ' $offset_fullwidth_content ');
+   //    kint( $sidebar_first , ' $sidebar_first ');
 
     //   kint( $sidebar_second , ' $sidebar_second ');
 
@@ -202,7 +202,14 @@ function newsplus_preprocess_page(&$variables) {
     $variables['main_grid_class'] = 'col-md-8';
     $variables['sidebar_second_grid_class'] = 'col-md-4';
   } else {
-    if ($offset_fullwidth_content && (isset($variables['node']) && !empty($variables['node'] && ($variables['node']->bundle()!='infoaebu')))) {
+   
+    //&& ($variables['node']->bundle()!='infoaebu')
+    $current_path = \Drupal::service('path.current')->getPath();
+
+//  kint ($current_path, 'current_path');
+
+    if (($offset_fullwidth_content && (isset($variables['node']) && !empty($variables['node'] 
+      ))) ||( $current_path=='/infoaebu')) {
      
       $variables['main_grid_class'] = 'col-md-8 col-md-offset-2';
       $variables['sidebar_first_grid_class'] = '';
@@ -403,6 +410,7 @@ function newsplus_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_
     $form[$key]['submit']['#attributes']->addClass('search-form__submit');
   }
 }
+
 
 function newsplus_preprocess_field(&$variables) {
   $element = $variables['element'];

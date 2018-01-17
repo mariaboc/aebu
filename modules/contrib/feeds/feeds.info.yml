@@ -4,9 +4,11 @@ package: Feeds
 type: module
 # core: 8.x
 configure: feeds.overview_types
+dependencies:
+  - drupal:system (>=8.3.0)
 
-# Information added by Drupal.org packaging script on 2017-07-09
+# Information added by Drupal.org packaging script on 2017-11-28
 version: '8.x-3.x-dev'
 core: '8.x'
 project: 'feeds'
-datestamp: 1499587746
+datestamp: 1511886795
